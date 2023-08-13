@@ -1,0 +1,48 @@
+pub mod constants;
+pub mod datamodels;
+pub mod feedhandler;
+
+use chrono::Utc;
+use flexi_logger::Logger;
+use log::info;
+// use uuid::Uuid;
+
+use crate::feedhandler::bitflyer::bitflyer_socketio::BitFlyerSocketIo;
+use crate::feedhandler::ticklogger;
+
+fn main() -> Result<(), flexi_logger::FlexiLoggerError> {
+    info!("Start");
+
+    // set logger
+    Logger::try_with_str("info, my::critical::module=trace")?
+        .format(flexi_logger::detailed_format)
+        // .log_to_file(FileSpec::default().directory("testlogs"))
+        // .append()
+        // .rotate(
+        //     flexi_logger::Criterion::Age(flexi_logger::Age::Day),
+        //     flexi_logger::Naming::Timestamps,
+        //     flexi_logger::Cleanup::KeepLogFiles(3),
+        // )
+        .start()?;
+
+    // set logic
+    let mut t_logger = ticklogger::TickLogger::new("bitflyer");
+
+    // set feedhandlers
+    let mut bfsocket = BitFlyerSocketIo::new();
+    bfsocket.set_callback(Box::new(move |data| t_logger.callback(data)));
+    bfsocket.connect(vec![
+        "lightning_executions_FX_BTC_JPY".to_string(),
+        "lightning_board_snapshot_FX_BTC_JPY".to_string(),
+        "lightning_board_FX_BTC_JPY".to_string(),
+        // "lightning_ticker_FX_BTC_JPY".to_string(),
+    ]);
+
+    // start loop
+    for _ in 0..10 {
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        println!("{:?}", Utc::now());
+    }
+
+    Ok(())
+}
