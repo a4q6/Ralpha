@@ -6,6 +6,7 @@ use ordered_float::OrderedFloat;
 use rust_socketio::{client::Client, ClientBuilder, Event, Payload, RawClient, TransportType};
 use serde_json::from_str;
 use std::collections::BTreeMap;
+use std::thread::sleep;
 use std::vec;
 use std::{
     sync::{Arc, Mutex},
@@ -42,6 +43,7 @@ impl BitFlyerSocketIo {
         let client = ClientBuilder::new("https://io.lightstream.bitflyer.com")
             .transport_type(TransportType::Websocket)
             .reconnect_on_disconnect(true)
+            .reconnect_delay(3000, 30000)
             .on("open", move |_payload: Payload, _raw_client: RawClient| {
                 info!("Open socket to BitFlyer");
             })
@@ -164,6 +166,10 @@ impl BitFlyerSocketIo {
                             } else {
                                 // ignore if snapshot does not exist
                             }
+                        }
+                        evt if evt.contains("kicked") => {
+                            warn!("Event: 'kicked' detected. Sleep this thread for 180s.");
+                            sleep(Duration::from_secs(180));
                         }
                         _ => warn!("Unknown event: {}", event),
                     }

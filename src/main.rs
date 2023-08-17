@@ -2,7 +2,9 @@ pub mod constants;
 pub mod datamodels;
 pub mod feedhandler;
 
-use chrono::Utc;
+// use chrono::Utc;
+use flexi_logger::Duplicate;
+use flexi_logger::FileSpec;
 use flexi_logger::Logger;
 use log::info;
 // use uuid::Uuid;
@@ -16,13 +18,14 @@ fn main() -> Result<(), flexi_logger::FlexiLoggerError> {
     // set logger
     Logger::try_with_str("info, my::critical::module=trace")?
         .format(flexi_logger::detailed_format)
-        // .log_to_file(FileSpec::default().directory("testlogs"))
-        // .append()
-        // .rotate(
-        //     flexi_logger::Criterion::Age(flexi_logger::Age::Day),
-        //     flexi_logger::Naming::Timestamps,
-        //     flexi_logger::Cleanup::KeepLogFiles(3),
-        // )
+        .log_to_file(FileSpec::default().directory("testlogs"))
+        .duplicate_to_stdout(Duplicate::All)
+        .append()
+        .rotate(
+            flexi_logger::Criterion::Age(flexi_logger::Age::Day),
+            flexi_logger::Naming::Timestamps,
+            flexi_logger::Cleanup::KeepLogFiles(3),
+        )
         .start()?;
 
     // set logic
@@ -39,10 +42,8 @@ fn main() -> Result<(), flexi_logger::FlexiLoggerError> {
     ]);
 
     // start loop
-    for _ in 0..10 {
-        std::thread::sleep(std::time::Duration::from_secs(3));
-        println!("{:?}", Utc::now());
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(10));
+        info!("Hearbeat");
     }
-
-    Ok(())
 }
