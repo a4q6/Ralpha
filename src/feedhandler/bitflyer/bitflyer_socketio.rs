@@ -43,7 +43,7 @@ impl BitFlyerSocketIo {
         let client = ClientBuilder::new("https://io.lightstream.bitflyer.com")
             .transport_type(TransportType::Websocket)
             .reconnect_on_disconnect(true)
-            .reconnect_delay(3000, 30000)
+            .reconnect_delay(5000, 30000)
             .on("open", move |_payload: Payload, _raw_client: RawClient| {
                 info!("Open socket to BitFlyer");
             })
@@ -51,7 +51,19 @@ impl BitFlyerSocketIo {
                 warn!("Close socket to BitFlyer");
             })
             .on("error", move |_payload: Payload, _raw_client: RawClient| {
-                error!("Error on socket to BitFlyer : {:?}", _payload);
+                error!("Error on socket to BitFlyer : {:#?}", _payload);
+                sleep(Duration::from_secs(1));
+
+                // sleep within maintenance.
+                let now = OffsetDateTime::now_utc();
+                if now.hour() == 19 && now.minute() < 10 {
+                    info!("Sleep within maintenance. ...");
+                    let maintenance_end =
+                        now.replace_minute(10).unwrap().replace_second(0).unwrap();
+                    sleep(Duration::from_secs_f64(
+                        (maintenance_end - now).as_seconds_f64(),
+                    ));
+                }
             })
             .on_any(move |event: Event, payload: Payload, _: RawClient| {
                 if let Payload::String(message) = payload {
@@ -168,8 +180,9 @@ impl BitFlyerSocketIo {
                             }
                         }
                         evt if evt.contains("kicked") => {
-                            warn!("Event: 'kicked' detected. Sleep this thread for 180s.");
-                            sleep(Duration::from_secs(180));
+                            warn!("Event: 'kicked' detected. Sleep this thread for 300s.");
+                            warn!("{:#?}", event);
+                            sleep(Duration::from_secs(300));
                         }
                         _ => warn!("Unknown event: {}", event),
                     }
