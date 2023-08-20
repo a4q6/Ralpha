@@ -40,26 +40,31 @@ impl BitFlyerSocketIo {
     }
 
     pub fn connect(mut self, channels: Vec<String>) {
+        let channel_memo = Arc::new(Mutex::new(channels.clone()));
         let client = ClientBuilder::new("https://io.lightstream.bitflyer.com")
             .transport_type(TransportType::Websocket)
             .reconnect_on_disconnect(true)
-            .reconnect_delay(5000, 30000)
-            .on("open", move |_payload: Payload, _raw_client: RawClient| {
+            .reconnect_delay(3000, 30000)
+            .on("open", move |_payload: Payload, _raw_client| {
                 info!("Open socket to BitFlyer");
+                for channel in channel_memo.lock().unwrap().iter() {
+                    info!("Send subscribe message for channel: {}", channel.as_str());
+                    _raw_client.emit("subscribe", channel.as_str()).unwrap();
+                }
             })
             .on("close", move |_payload: Payload, _raw_client: RawClient| {
                 warn!("Close socket to BitFlyer");
             })
             .on("error", move |_payload: Payload, _raw_client: RawClient| {
                 error!("Error on socket to BitFlyer : {:#?}", _payload);
-                sleep(Duration::from_secs(1));
+                sleep(Duration::from_secs(3));
 
                 // sleep within maintenance.
                 let now = OffsetDateTime::now_utc();
                 if now.hour() == 19 && now.minute() < 10 {
                     info!("Sleep within maintenance. ...");
                     let maintenance_end =
-                        now.replace_minute(15).unwrap().replace_second(0).unwrap();
+                        now.replace_minute(10).unwrap().replace_second(0).unwrap();
                     sleep(Duration::from_secs_f64(
                         (maintenance_end - now).as_seconds_f64(),
                     ));
@@ -191,12 +196,7 @@ impl BitFlyerSocketIo {
             .connect()
             .unwrap();
 
-        let wait_connect_seconds = Duration::from_secs(3);
-        std::thread::sleep(wait_connect_seconds);
-
-        for channel in channels {
-            client.emit("subscribe", channel).unwrap();
-        }
+        std::thread::sleep(Duration::from_secs(1));
 
         self.client = Option::from(client);
     }
