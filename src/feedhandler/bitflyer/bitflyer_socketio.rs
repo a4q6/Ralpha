@@ -59,7 +59,7 @@ impl BitFlyerSocketIo {
                 if now.hour() == 19 && now.minute() < 10 {
                     info!("Sleep within maintenance. ...");
                     let maintenance_end =
-                        now.replace_minute(10).unwrap().replace_second(0).unwrap();
+                        now.replace_minute(15).unwrap().replace_second(0).unwrap();
                     sleep(Duration::from_secs_f64(
                         (maintenance_end - now).as_seconds_f64(),
                     ));
