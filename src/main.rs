@@ -12,7 +12,7 @@ use log::info;
 use crate::feedhandler::bitflyer::bitflyer_socketio::BitFlyerSocketIo;
 use crate::feedhandler::ticklogger;
 
-fn main() -> Result<(), flexi_logger::FlexiLoggerError> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Start");
 
     // set logger
