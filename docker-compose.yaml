@@ -1,0 +1,10 @@
+version: '3'
+services:
+  ralpha_main:
+    image: "py38_rust1711:latest"
+    build:
+      context: docker/main
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - "./:/home" # host:container
