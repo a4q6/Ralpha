@@ -24,5 +24,7 @@ RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc && \
     eval "$(pyenv init -)"
 RUN pyenv install anaconda3-2021.05 && pyenv global anaconda3-2021.05
 
+WORKDIR /home
+
 # entrypoint
 CMD ["/bin/bash"]

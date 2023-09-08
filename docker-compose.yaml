@@ -5,6 +5,7 @@ services:
     build:
       context: docker/main
       dockerfile: Dockerfile
-    restart: always
+    tty: true
+    # restart: always
     volumes:
       - "./:/home" # host:container
