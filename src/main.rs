@@ -1,3 +1,4 @@
+pub mod api_client;
 pub mod constants;
 pub mod datamodels;
 pub mod feedhandler;
@@ -9,6 +10,7 @@ use flexi_logger::Logger;
 use log::info;
 // use uuid::Uuid;
 
+// use crate::api_client::execution_client::ExecutionClient;
 use crate::feedhandler::bitflyer::bitflyer_socketio::BitFlyerSocketIo;
 use crate::feedhandler::ticklogger;
 
@@ -35,9 +37,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut bfsocket = BitFlyerSocketIo::new();
     bfsocket.set_callback(Box::new(move |data| t_logger.callback(data)));
     bfsocket.connect(vec![
-        "lightning_executions_FX_BTC_JPY".to_string(),
-        "lightning_board_snapshot_FX_BTC_JPY".to_string(),
-        "lightning_board_FX_BTC_JPY".to_string(),
+        "lightning_executions_BTC_JPY".to_string(),
+        "lightning_board_snapshot_BTC_JPY".to_string(),
+        "lightning_board_BTC_JPY".to_string(),
         // "lightning_ticker_FX_BTC_JPY".to_string(),
     ]);
 

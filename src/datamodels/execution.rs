@@ -4,23 +4,20 @@ use time::OffsetDateTime;
 use crate::constants::constants;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct Order {
+pub struct Execution {
     #[serde(with = "time::serde::rfc3339")]
     pub timestamp: OffsetDateTime,
     #[serde(with = "time::serde::rfc3339")]
     pub market_created_timestamp: OffsetDateTime,
     #[serde(with = "time::serde::rfc3339")]
     pub received_timestamp: OffsetDateTime,
+    pub venue: String,
     pub sym: String,
     pub side: i16,
     pub price: f64,
     pub amount: f64,
-    pub executed_amount: f64,
-    pub order_type: OrderType,
-    pub order_status: OrderStatus,
-    pub venue: String,
-    pub order_id: String,
-    pub model_id: String,
+    pub execution_id: String,
+    pub source_order_id: String,
     pub data_center: String,
     pub process_id: String,
     pub universal_id: String,
@@ -28,48 +25,27 @@ pub struct Order {
     pub misc: String,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub enum OrderType {
-    Market,
-    StopLimit,
-    Limit,
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub enum OrderStatus {
-    Created,
-    Submitted,
-    Accepted,
-    Amended,
-    Filled,
-    Canceled,
-}
-
-impl Order {
+impl Execution {
     pub fn new(
-        timestamp: OffsetDateTime,
         sym: &str,
         side: i16,
         price: f64,
         amount: f64,
-        order_type: OrderType,
         venue: &str,
-        model_id: &str,
-    ) -> Order {
-        return Order {
-            timestamp: timestamp,
+        source_order_id: String,
+        execution_id: String,
+    ) -> Execution {
+        return Execution {
+            timestamp: OffsetDateTime::now_utc(),
             market_created_timestamp: OffsetDateTime::now_utc(),
             received_timestamp: OffsetDateTime::now_utc(),
             sym: sym.to_string(),
             side: side,
             price: price,
             amount: amount,
-            executed_amount: 0.0,
-            order_type: order_type,
-            order_status: OrderStatus::Created,
             venue: venue.to_string(),
-            order_id: uuid::Uuid::new_v4().to_string(),
-            model_id: model_id.to_string(),
+            source_order_id: source_order_id,
+            execution_id: execution_id,
             data_center: constants::MACHINE_ID.to_string(),
             process_id: constants::RUNTIME_ID.to_string(),
             universal_id: uuid::Uuid::new_v4().to_string(),

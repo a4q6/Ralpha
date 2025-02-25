@@ -20,7 +20,7 @@ pub struct Position {
 }
 
 impl Position {
-    fn new(sym: &str, venue: &str, model_id: &str) -> Position {
+    pub fn new(sym: &str, venue: &str, model_id: &str) -> Position {
         return Position {
             timestamp: OffsetDateTime::now_utc(),
             sym: sym.to_string(),
